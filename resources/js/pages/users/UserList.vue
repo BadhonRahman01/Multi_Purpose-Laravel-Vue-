@@ -4,16 +4,15 @@ import { ref, onMounted, reactive, watch } from "vue";
 import { Form, Field, useResetForm } from "vee-validate";
 import * as yup from "yup";
 import { useToastr } from "../../toastr.js";
-import { Bootstrap5Pagination } from 'laravel-vue-pagination';
-
+import { Bootstrap5Pagination } from "laravel-vue-pagination";
 
 import UserListItem from "./UserListItem.vue";
 
-import debounce from 'lodash.debounce'
+import debounce from "lodash.debounce";
 
 const toastr = useToastr();
 // const users = ref([]);
-const users = ref({'data': []});
+const users = ref({ data: [] });
 const editing = ref(false);
 const formValues = ref();
 const form = ref(null);
@@ -28,6 +27,8 @@ const getUsers = (page = 1) => {
   axios.get(`/api/users?page=${page}`)
   .then((response) => {
     users.value = response.data;
+    selectedUsers.value = [];
+    selectAll.value = false;
   });
 };
 
@@ -49,7 +50,7 @@ const createUser = (values, { resetForm, setErrors }) => {
   axios
     .post("/api/users", values)
     .then((response) => {
-      users.value.unshift(response.data);
+      users.value.data.unshift(response.data);
       $("#userFormModal").modal("hide");
       resetForm();
       toastr.success("User Created Successfully!");
@@ -103,14 +104,9 @@ const handleSubmit = (values, actions) => {
   }
 };
 
-
 const userDeleted = (userId) => {
   users.value = users.value.filter((user) => user.id !== userId);
 };
-
-
-
-
 
 // const createUser = () => {
 //   axios.post("/api/users", form).then((response) => {
@@ -122,26 +118,70 @@ const userDeleted = (userId) => {
 //   });
 // };
 
-
 const searchQuery = ref(null);
 
-const  search = () => {
-        axios.get('/api/users/search', {
-            params: {
-                query: searchQuery.value
-            }
-        })
-        .then((response) => {
-            users.value = response.data;
-        })
-        .catch((error) => {
-            console.log(error);
-        });
-}
+const search = () => {
+  axios
+    .get("/api/users/search", {
+      params: {
+        query: searchQuery.value,
+      },
+    })
+    .then((response) => {
+      users.value = response.data;
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+};
 
-watch(searchQuery, debounce(() => {
+const selectedUsers = ref([]);
+
+const toggleSelection = (user) => {
+  const index = selectedUsers.value.indexOf(user.id);
+
+  if (index === -1) {
+    selectedUsers.value.push(user.id);
+  } else {
+    selectedUsers.value.splice(index, 1);
+  }
+  // console.log(selectedUsers.value);
+};
+
+const bulkDelete = () => {
+  axios
+    .delete("/api/users", {
+      data: {
+        ids: selectedUsers.value,
+      },
+    })
+    .then((response) => {
+      users.value.data = users.value.data.filter(
+        (user) => !selectedUsers.value.includes(user.id)
+      );
+      selectedUsers.value = [];
+      selectAll.value = false;
+      toastr.success(response.data.message);
+    });
+};
+
+const selectAll = ref(false);
+
+const selectAllUsers = () => {
+  if (selectAll.value) {
+    selectedUsers.value = users.value.data.map((user) => user.id);
+  } else {
+    selectedUsers.value = [];
+  }
+  console.log(selectedUsers.value);
+};
+
+watch(
+  searchQuery,
+  debounce(() => {
     search();
-}, 300));
+  }, 300)
+);
 
 onMounted(() => {
   getUsers();
@@ -167,20 +207,46 @@ onMounted(() => {
 
   <div class="content">
     <div class="container-fluid">
-        <div class="d-flex justify-content-between">
-            <button @click="addUser" type="button" class="mb-2 btn btn-primary">
-        Add New User
-      </button>
-      <div >
-        <input type="text" v-model="searchQuery" class="form-control" placeholder="Search...">
+      <div class="d-flex justify-content-between">
+        <div class="d-flex">
+          <button @click="addUser" type="button" class="mb-2 btn btn-primary">
+            <i class="fa fa-plus-circle mr-1"></i>
+            Add New User
+          </button>
 
-      </div>
+          <div class="d-flex" v-if="selectedUsers.length > 0">
+            <button
+
+            @click="bulkDelete"
+            type="button"
+            class="mb-2 btn btn-danger ml-2">
+            <i class="fa fa-trash mr-1"></i>
+            Delete Selected
+          </button>
+          <span class="ml-2 mt-2">Selected {{ selectedUsers.length }} Users</span>
+          </div>
         </div>
+        <div>
+          <input
+            type="text"
+            v-model="searchQuery"
+            class="form-control"
+            placeholder="Search..."
+          />
+        </div>
+      </div>
       <div class="card">
         <div class="card-body">
           <table class="table table-bordered">
             <thead>
               <tr>
+                <th>
+                  <input
+                    type="checkbox"
+                    v-model="selectAll"
+                    @change="selectAllUsers"
+                  />
+                </th>
                 <th scope="col">#</th>
                 <th scope="col">Name</th>
                 <th scope="col">Email</th>
@@ -190,28 +256,27 @@ onMounted(() => {
               </tr>
             </thead>
             <tbody v-if="users.data.length > 0">
-                <UserListItem v-for="(user, index) in users.data"
+              <UserListItem
+                v-for="(user, index) in users.data"
                 :key="user.id"
-                :user=user
-                :index=index
+                :user="user"
+                :index="index"
                 @edit-user="editUser"
                 @user-deleted="userDeleted"
-                />
+                @toggle-selection="toggleSelection"
+                :select-all="selectAll"
+              />
             </tbody>
             <tbody v-else>
-                <tr>
-                    <td colspan="6" class="text-center">No Users Found</td>
-                </tr>
+              <tr>
+                <td colspan="6" class="text-center">No Users Found</td>
+              </tr>
             </tbody>
-
           </table>
         </div>
       </div>
 
-      <Bootstrap5Pagination
-      :data="users"
-      @pagination-change-page="getUsers"
-  />
+      <Bootstrap5Pagination :data="users" @pagination-change-page="getUsers" />
     </div>
   </div>
 
@@ -305,6 +370,4 @@ onMounted(() => {
       </div>
     </div>
   </div>
-
-
 </template>

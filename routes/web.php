@@ -29,6 +29,7 @@ Route::get('/api/users/search', [UserController::class, 'search']);
 Route::patch('api/users/{user}/change-role', [UserController::class, 'changeRole']);
 Route::put('/api/users/{user}', [UserController::class, 'update']);
 Route::delete('/api/users/{user}', [UserController::class, 'destroy']);
+Route::delete('/api/users', [UserController::class, 'buldDelete']);
 
 Route::get('{view}', ApplicationController::class)->where('view', '(.*)');
 

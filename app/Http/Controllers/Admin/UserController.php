@@ -19,7 +19,7 @@ class UserController extends Controller
         //         'created_at' => $user->created_at->toFormattedDate(),
         //     ];
         // });
-        $users = User::latest()->paginate();
+        $users = User::latest()->paginate(2);
         return $users;
     }
 
@@ -90,5 +90,12 @@ class UserController extends Controller
         $users = User::where('name', 'like', '%' . $searchQuery . '%')->paginate();
 
         return response()->json($users);
+    }
+
+
+    public function buldDelete(){
+        User::whereIn('id', request('ids'))->delete();
+
+        return response()->json(['message' => 'Users deleted successfully!']);
     }
 }
