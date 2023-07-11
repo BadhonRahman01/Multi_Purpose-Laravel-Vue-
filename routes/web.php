@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\ApplicationController;
+use App\Http\Controllers\Admin\AppointmentController;
 
 /*
 |--------------------------------------------------------------------------
@@ -31,5 +32,7 @@ Route::put('/api/users/{user}', [UserController::class, 'update']);
 Route::delete('/api/users/{user}', [UserController::class, 'destroy']);
 Route::delete('/api/users', [UserController::class, 'buldDelete']);
 
+
+Route::get('/api/appointments', [AppointmentController::class, 'index']);
 Route::get('{view}', ApplicationController::class)->where('view', '(.*)');
 
