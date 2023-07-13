@@ -19,7 +19,15 @@ class UserController extends Controller
         //         'created_at' => $user->created_at->toFormattedDate(),
         //     ];
         // });
-        $users = User::latest()->paginate(2);
+        $searchQuery = request('query');
+
+        $users = User::query()
+        ->when(request('query'), function($query, $searchQuery) {
+            $query->where('name', 'like', "%{$searchQuery}%");
+        })
+        ->latest()
+        ->paginate();
+
         return $users;
     }
 
@@ -76,21 +84,21 @@ class UserController extends Controller
         return response()->json(['success' => true]);
     }
 
-    public function search()
-    {
-        // request()->validate([
-        //     'query' => 'required',
-        // ]);
+    // public function search()
+    // {
+    //     // request()->validate([
+    //     //     'query' => 'required',
+    //     // ]);
 
-        // $users = User::where('name', 'like', '%' . request('query') . '%')
-        //     ->orWhere('email', 'like', '%' . request('query') . '%')
-        //     ->get();
-        $searchQuery = request('query');
+    //     // $users = User::where('name', 'like', '%' . request('query') . '%')
+    //     //     ->orWhere('email', 'like', '%' . request('query') . '%')
+    //     //     ->get();
+    //     $searchQuery = request('query');
 
-        $users = User::where('name', 'like', '%' . $searchQuery . '%')->paginate();
+    //     $users = User::where('name', 'like', '%' . $searchQuery . '%')->paginate();
 
-        return response()->json($users);
-    }
+    //     return response()->json($users);
+    // }
 
 
     public function buldDelete(){

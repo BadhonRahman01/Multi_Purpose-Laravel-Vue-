@@ -24,7 +24,11 @@ const form = ref(null);
 // });
 
 const getUsers = (page = 1) => {
-  axios.get(`/api/users?page=${page}`)
+  axios.get(`/api/users?page=${page}`, {
+    params: {
+        query: searchQuery.value
+    }
+  })
   .then((response) => {
     users.value = response.data;
     selectedUsers.value = [];
@@ -117,20 +121,20 @@ const handleSubmit = (values, actions) => {
 
 const searchQuery = ref(null);
 
-const search = () => {
-  axios
-    .get("/api/users/search", {
-      params: {
-        query: searchQuery.value,
-      },
-    })
-    .then((response) => {
-      users.value = response.data;
-    })
-    .catch((error) => {
-      console.log(error);
-    });
-};
+// const search = () => {
+//   axios
+//     .get("/api/users/search", {
+//       params: {
+//         query: searchQuery.value,
+//       },
+//     })
+//     .then((response) => {
+//       users.value = response.data;
+//     })
+//     .catch((error) => {
+//       console.log(error);
+//     });
+// };
 
 const selectedUsers = ref([]);
 
@@ -193,9 +197,8 @@ const selectAllUsers = () => {
 };
 
 watch(
-  searchQuery,
-  debounce(() => {
-    search();
+  searchQuery, debounce(() => {
+    getUsers();
   }, 300)
 );
 

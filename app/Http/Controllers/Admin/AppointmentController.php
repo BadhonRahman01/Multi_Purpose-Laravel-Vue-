@@ -31,23 +31,50 @@ class AppointmentController extends Controller
     }
 
     public function store(){
-        request()->validate([
+        $validated = request()->validate([
             'title' => 'required',
-            // 'client_id' => 'required|exists:clients,id',
-            // 'start_time' => 'required|date',
-            // 'end_time' => 'required|date|after:start_time',
+             'client_id' => 'required|exists:clients,id',
+            'start_time' => 'required|date',
+            'end_time' => 'required|date|after:start_time',
             'description' => 'required',
+        ], [
+            'client_id.required' => 'The client name field is required.',
         ]);
 
         Appointment::create([
-            'title' => request('title'),
-            'client_id' => 1,
-            'start_time' => now(),
-            'end_time' => now(),
-            'description' => request('description'),
+            'title' => $validated['title'],
+            'client_id' => $validated['client_id'],
+            'start_time' => $validated['start_time'],
+            'end_time' => $validated['end_time'],
+            'description' => $validated['description'],
             'status' => AppointmentStatus::SCHEDULED,
         ]);
 
         return response()->json(['message' => 'success']);
+    }
+
+    public function edit(Appointment $appointment)
+    {
+        return $appointment;
+    }
+    public function update(Appointment $appointment){
+        $validated = request()->validate([
+            'title' => 'required',
+             'client_id' => 'required|exists:clients,id',
+            'start_time' => 'required|date',
+            'end_time' => 'required|date',
+            'description' => 'required',
+        ], [
+            'client_id.required' => 'The client name field is required.',
+        ]);
+
+        $appointment->update($validated);
+
+        return response()->json(['success' => true]);
+
+    }
+    public function destroy(Appointment $appointment){
+        $appointment->delete();
+        return response()->json(['success' => true], 200);
     }
 }
