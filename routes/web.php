@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\ApplicationController;
 use App\Http\Controllers\Admin\ClientController;
 use App\Http\Controllers\Admin\AppointmentController;
+use App\Http\Controllers\Admin\DashboardStatController;
 use App\Http\Controllers\Admin\AppointmentStatusController;
 
 /*
@@ -27,6 +28,11 @@ Route::get('/', function () {
 // });
 
 Route::middleware('auth')->group(function(){
+
+    Route::get('/api/stats/appointments', [DashboardStatController::class, 'appointments']);
+    Route::get('/api/stats/users', [DashboardStatController::class, 'users']);
+
+
 
     Route::get('/api/users', [UserController::class, 'index']);
     Route::post('/api/users', [UserController::class, 'store']);

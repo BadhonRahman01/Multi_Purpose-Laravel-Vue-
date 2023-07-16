@@ -1,17 +1,27 @@
 <script setup>
-import { reactive } from "vue";
+import { reactive, ref } from "vue";
 import axios from "axios";
 
 const form = reactive({
-    email: '',
-    password: '',
+  email: "",
+  password: "",
 });
 
+const loading = ref(false);
+const errorMessage = ref("");
 const handleSubmit = () => {
-    axios.post('/login', form)
-    .then(() =>{
-         window.location.href = '/admin/dashoard';
+    loading.value = true;
+    errorMessage.value = "";
+  axios.post("/login", form)
+    .then(() => {
+      window.location.href = "/admin/dashoard";
     })
+    .catch((error) => {
+      errorMessage.value = error.response.data.message;
+    })
+    .finally(() => {
+      loading.value = false;
+    });
 };
 </script>
 
@@ -25,9 +35,17 @@ const handleSubmit = () => {
       </div>
       <div class="card-body">
         <p class="login-box-msg">Sign in to start your session</p>
+        <div v-if="errorMessage" class="alert alert-danger" role="alert">
+          {{ errorMessage  }}
+        </div>
         <form @submit.prevent="handleSubmit()">
           <div class="input-group mb-3">
-            <input v-model="form.email" type="email" class="form-control" placeholder="Email" />
+            <input
+              v-model="form.email"
+              type="email"
+              class="form-control"
+              placeholder="Email"
+            />
             <div class="input-group-append">
               <div class="input-group-text">
                 <span class="fas fa-envelope"></span>
@@ -36,7 +54,7 @@ const handleSubmit = () => {
           </div>
           <div class="input-group mb-3">
             <input
-            v-model="form.password"
+              v-model="form.password"
               type="password"
               class="form-control"
               placeholder="Password"
@@ -56,8 +74,13 @@ const handleSubmit = () => {
             </div>
 
             <div class="col-4">
-              <button type="submit" class="btn btn-primary btn-block">
-                Sign In
+              <button type="submit" class="btn btn-primary btn-block" :disabled="loading">
+                <div v-if="loading" class="spinner-border spinner-border-sm" role="status">
+                </div>
+                <span v-else>
+                    Sign In
+                </span>
+
               </button>
             </div>
           </div>
