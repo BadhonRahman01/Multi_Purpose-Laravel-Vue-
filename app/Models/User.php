@@ -54,7 +54,8 @@ class User extends Authenticatable
     public function getFormattedCreatedAtAttribute($value)
     {
         // return \Carbon\Carbon::parse($value)->format(config('app.date_format'));
-        return $this->created_at->format(config('app.date_format'));
+        // return $this->created_at->format(config('app.date_format'));
+        return $this->created_at->format(setting('date_format'));
     }
 
     public function role(): Attribute

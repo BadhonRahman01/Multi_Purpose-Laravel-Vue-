@@ -1,3 +1,36 @@
+<script setup>
+import { onMounted, ref } from 'vue';
+import {useToastr} from "@/toastr";
+
+
+const settings = ref([]);
+const toastr = useToastr();
+
+
+const getSettings = () => {
+    axios.get('/api/settings')
+        .then(response => {
+            settings.value = response.data;
+        });
+        // .catch(error => {
+        //     console.log(error);
+        // });
+};
+
+const updateSettings = () => {
+    axios.post('/api/settings', settings.value)
+        .then(response => {
+            toastr.success('Settings Updated Successfully');
+        });
+
+};
+
+onMounted(() => {
+    getSettings();
+});
+</script>
+
+
 <template>
     <div class="content-header">
     <div class="container-fluid">
@@ -15,11 +48,44 @@
     </div>
 </div>
 
-
 <div class="content">
     <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card card-primary">
+                    <div class="card-header">
+                        <h3 class="card-title">General Setting</h3>
+                    </div>
 
+                    <form @submit.prevent="updateSettings()">
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label for="appName">App Display Name</label>
+                                <input v-model="settings.app_name" type="text" class="form-control" id="appName" placeholder="Enter app display name">
+                            </div>
+                            <div class="form-group">
+                                <label for="dateFormat">Date Format</label>
+                                <select v-model="settings.date_format" class="form-control">
+                                    <option value="m/d/Y">MM/DD/YYYY</option>
+                                    <option value="d/m/Y">DD/MM/YYYY</option>
+                                    <option value="Y-m-d">YYYY-MM-DD</option>
+                                    <option value="F j, Y">Month DD, YYYY</option>
+                                    <option value="j F Y">DD Month YYYY</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="paginationLimit">Pagination Limit</label>
+                                <input v-model="settings.pagination_limit" type="text" class="form-control" id="paginationLimit" placeholder="Enter pagination limit">
+                            </div>
+                        </div>
 
+                        <div class="card-footer">
+                            <button type="submit" class="btn btn-primary"><i class="fa fa-save mr-1"></i>Save Changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 </template>
