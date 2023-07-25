@@ -20,9 +20,9 @@ class SettingController extends Controller
 
     public function update(){
         $data = request()->validate([
-            'app_name' => 'required',
-            'date_format' => 'required',
-            'pagination_limit' => 'required|numeric',
+            'app_name' => ['required', 'string'],
+            'date_format' => ['required', 'string'],
+            'pagination_limit' => ['required', 'int', 'min:1', 'max:100'],
         ]);
 
         foreach($data as $key => $value){

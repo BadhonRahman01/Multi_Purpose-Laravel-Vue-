@@ -16,12 +16,19 @@ const getSettings = () => {
         //     console.log(error);
         // });
 };
-
+const errors = ref();
 const updateSettings = () => {
+    errors.value = '';
     axios.post('/api/settings', settings.value)
         .then(response => {
             toastr.success('Settings Updated Successfully');
-        });
+        })
+        .catch(error => {
+            if(error.response && error.response.status === 422) {
+                errors.value = error.response.data.errors;
+                toastr.error('Validation Error');
+            }
+        })
 
 };
 
@@ -62,6 +69,7 @@ onMounted(() => {
                             <div class="form-group">
                                 <label for="appName">App Display Name</label>
                                 <input v-model="settings.app_name" type="text" class="form-control" id="appName" placeholder="Enter app display name">
+                                <span class="text-danger text-sm" v-if="errors && errors.app_name">{{ errors.app_name[0] }}</span>
                             </div>
                             <div class="form-group">
                                 <label for="dateFormat">Date Format</label>
@@ -72,10 +80,12 @@ onMounted(() => {
                                     <option value="F j, Y">Month DD, YYYY</option>
                                     <option value="j F Y">DD Month YYYY</option>
                                 </select>
+                                <span class="text-danger text-sm" v-if="errors && errors.date_format">{{ errors.date_format[0] }}</span>
                             </div>
                             <div class="form-group">
                                 <label for="paginationLimit">Pagination Limit</label>
                                 <input v-model="settings.pagination_limit" type="text" class="form-control" id="paginationLimit" placeholder="Enter pagination limit">
+                                <span class="text-danger text-sm" v-if="errors && errors.pagination_limit">{{ errors.pagination_limit[0] }}</span>
                             </div>
                         </div>
 
